@@ -40,6 +40,13 @@ if [ "$?" -ne 0 ]; then
   exit 1
 fi
 
+# Test wagerrd connectivety
+${wcmd} getmasternodecount &>/dev/null
+if [ "$?" -ne 0 ]; then
+  echo "Error communicating with wagerr daemon"
+  exit 1
+fi
+
 echo "==== General Rewards Info ==="
 echo ""
 
@@ -62,6 +69,13 @@ echo "# of Masternodes in 10% lottery: $num10"
 
 # Specific Masternode Info
 echo ""
+
+# Test masternode status
+${wcmd} masternode status &>/dev/null
+if [ "$?" -ne 0 ]; then
+  echo "This server is not a masternode"
+  exit 1
+fi
 
 if [ $# -eq 2 ]; then
   mnTxHash=$1
