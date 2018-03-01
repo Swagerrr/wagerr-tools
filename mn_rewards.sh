@@ -1,8 +1,21 @@
 #!/bin/bash
 #
-# Swagerr
+# AUTHOR: Swagerr
 #
-# Dependencies: jq, bc
+# DESCRIPTION:
+# Displays some useful information about masternode reward times
+# Without any argument it will get information about the current running masternode
+# With arguments it will show information about the masternode associated with the provided transaction hash
+#
+# ARGUMENTS:
+# 1) Transaction Hash (optional)
+# 2) Transaction Hash Index (optional)
+#
+# EXAMPLE:
+# ./mn_rewards.sh
+# ./mn_rewards.sh 7c59bf04434bb75f2ab1f5894a6216f3315008eafed11c923d507eaa60ae1366 1
+#
+# DEPENDENCIES jq, bc
 #
 
 clear
