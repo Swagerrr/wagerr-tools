@@ -11,6 +11,7 @@ yum install bc jq
 apt-get install bc jq
 ```
 
+##### Download and Run #####
 ```
 wget https://raw.githubusercontent.com/Swagerrr/wagerr-tools/master/mn_rewards.sh
 chmod +x mn_rewards.sh
