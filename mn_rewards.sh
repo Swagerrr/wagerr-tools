@@ -27,6 +27,15 @@ if [ ! -f "$wconf" ]; then
   exit 1
 fi
 
+# user check
+confUser=$(stat -c '%U' $wconf)
+currentUser=$(whoami)
+if [ "$confUser" != "$currentUser" ]; then
+  path=$(readlink -f $0)
+  su -c "$path $@" $confUser
+  exit
+fi
+
 wcmd="${wcli} -conf=${wconf}" 
 
 which jq &>/dev/null
