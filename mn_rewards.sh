@@ -22,6 +22,7 @@ if [ ! -f "$wconf" ]; then
   wconf=$(find / -type f -name "wagerr.conf" 2>/dev/null | head -1)
   echo "Found $wconf"
 fi
+echo ""
 if [ ! -f "$wconf" ]; then
   echo "Could not find 'wagerr.conf'"
   exit 1
