@@ -2,11 +2,11 @@
 
 ## To Use: ##
 
-### RHEL/CentOS/Fedora ###
+##### RHEL/CentOS/Fedora #####
 ```
 yum install bc jq
 ```
-### Ubuntu ###
+##### Ubuntu #####
 ```
 apt-get install bc jq
 ```
