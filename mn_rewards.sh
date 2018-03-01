@@ -18,8 +18,7 @@
 # DEPENDENCIES jq, bc
 #
 
-clear
-
+echo ""
 wcli="./wagerr-cli"
 if [ ! -f "$wcli" ]; then
   wcli=$(find / -type f -name "wagerr-cli" 2>/dev/null | head -1)
