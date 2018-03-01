@@ -2,6 +2,15 @@
 
 ## To Use: ##
 
+### RHEL/CentOS/Fedora ###
+```
+yum install bc jq
+```
+### Ubuntu ###
+```
+apt-get install bc jq
+```
+
 ```
 wget https://raw.githubusercontent.com/Swagerrr/wagerr-tools/master/mn_rewards.sh
 chmod +x mn_rewards.sh
