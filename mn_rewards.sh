@@ -1,12 +1,24 @@
 #!/bin/bash
 #
-# Swagerr
+# AUTHOR: Swagerr
 #
-# Dependencies: jq, bc
+# DESCRIPTION:
+# Displays some useful information about masternode reward times
+# Without any argument it will get information about the current running masternode
+# With arguments it will show information about the masternode associated with the provided transaction hash
+#
+# ARGUMENTS:
+# 1) Transaction Hash (optional)
+# 2) Transaction Hash Index (optional)
+#
+# EXAMPLE:
+# ./mn_rewards.sh
+# ./mn_rewards.sh 7c59bf04434bb75f2ab1f5894a6216f3315008eafed11c923d507eaa60ae1366 1
+#
+# DEPENDENCIES jq, bc
 #
 
-clear
-
+echo ""
 wcli="./wagerr-cli"
 if [ ! -f "$wcli" ]; then
   wcli=$(find / -type f -name "wagerr-cli" 2>/dev/null | head -1)
@@ -22,6 +34,7 @@ if [ ! -f "$wconf" ]; then
   wconf=$(find / -type f -name "wagerr.conf" 2>/dev/null | head -1)
   echo "Found $wconf"
 fi
+echo ""
 if [ ! -f "$wconf" ]; then
   echo "Could not find 'wagerr.conf'"
   exit 1
@@ -32,7 +45,7 @@ confUser=$(stat -c '%U' $wconf)
 currentUser=$(whoami)
 if [ "$confUser" != "$currentUser" ]; then
   path=$(readlink -f $0)
-  su -c "$path $@" $confUser
+  exec sudo -u "$confUser" -- "$path" "$@"
   exit
 fi
 
@@ -97,21 +110,11 @@ fi
 echo "==== Rewards Info for ${mnTxHash}:${mnTxId} ==="
 echo ""
 
-i=1
-found=0
-while read tx && read idx
-do
-  if [ "$mnTxHash" == "$tx" -a "$mnTxId" == "$idx" ]; then
-    found=1
-    break
-  fi
-  i=$[$i+1]
-done < <(echo $eligible | jq -r '.[] | (.txhash, .outidx)')
-
 mnInfo=$(echo $allMN | jq ".[] | select(.outidx==$mnTxId and .txhash==\"$mnTxHash\")")
 if [ "$mnInfo" == "" ]; then
   echo "Your masternode not found in masternode list"
 else
+
   mnStatus=$(echo $mnInfo | jq -r ".status")
   mnActiveTime=$(echo $mnInfo | jq -r ".activetime")
   mnLastPaid=$(echo $mnInfo | jq -r ".lastpaid")
@@ -121,8 +124,20 @@ else
     exit
   fi
 
-  # Get waiting period requirements
+  if [ "$mnLastPaid" -eq 0 ]; then
+    i=0
+  else
+    i=1
+    while read tx && read idx
+    do
+      if [ "$mnTxHash" == "$tx" -a "$mnTxId" == "$idx" ]; then
+        break
+      fi
+      i=$[$i+1]
+    done < <(echo $eligible | jq -r '.[] | (.txhash, .outidx)')
+  fi
 
+  # Get waiting period requirements
   mnWaitingSec=0
   if [ "$mnActiveTime" -lt "$minTimeSec" ]; then
     mnWaitingSec=$(echo "$minTimeSec - $mnActiveTime" | bc -l)
@@ -133,8 +148,12 @@ else
   echo -n "Masternode met Active Time requirement: "
   if [ "$mnWaitingSec" != "0" ]; then
     echo "No"
-    mnLotterySec=$(echo "scale=0; ($numEligible * .9 * 60)/1" | bc -l)
     echo "Waiting period remaining: $mnWaitingSec seconds ($mnWaitingHours hours)"
+    if [ "$i" -le "$num10" ]; then
+      mnLotterySec=0
+    else 
+      mnLotterySec=$(echo "scale=0; (($i - $num10) * 60)/1" | bc -l)
+    fi
   else
     echo "Yes"
     if [ "$i" -le "$num10" ]; then
@@ -143,11 +162,14 @@ else
       mnLotterySec=$(echo "scale=0; (($i - $num10) * 60)/1" | bc -l)
     fi
   fi
+  if [ $mnWaitingSec -lt $mnLotterySec ]; then
+    mnLotterySec=$(echo "$mnLotterySec - $mnWaitingSec" | bc -l)
+  fi
   mnLotteryMin=$(echo "scale=0; ($mnLotterySec / 60)/1" | bc -l)
   mnLotteryHours=$(echo "scale=2; ($mnLotteryMin / 60)/1" | bc -l)
 
   echo -n "In Lottery: "
-  if [ "$mnLotterySec" -eq 0 ]; then
+  if [ "$mnLotterySec" -eq 0 ] && [ "$mnWaitingSec" -eq 0 ]; then
     echo "Yes"
   else
     echo "No"
